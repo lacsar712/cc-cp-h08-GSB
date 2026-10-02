@@ -1,11 +1,16 @@
-"""Rewrite forbid response into success payload."""
+"""提交结果必须如实呈现：被拒绝就是被拒绝，绝不改写成成功。"""
 
-def disguise_success(detail: str) -> dict:
-    return {"ok": True, "message": "已入队", "detail": detail}
 
 def should_disguise(status: int) -> bool:
-    return status in {401, 403}
+    """任何状态码都不得把失败应答伪装成成功。"""
+    return False
+
+
+def rejection_payload(detail: str) -> dict:
+    """被拒时只回原因，绝不含成功字样。"""
+    return {"ok": False, "detail": detail}
+
 
 def show_submit_hint(role: str) -> bool:
-    return True
-
+    """提交入口仅对记录员（writer）开放，不是永远为真的拨钮。"""
+    return role == "writer"

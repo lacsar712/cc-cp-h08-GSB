@@ -107,10 +107,11 @@ export function App() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setMsg("已入队"); /* h08-trap-success */
-        setRows((prev) => [{ id: 0, probe_id: "", temp_c: 0, verdict: null, reason: null, status: "pending", created_by: "" }, ...prev]);
+        // 被拒只亮原因：不显示成功条、不塞空行，列表保持与服务端一致
+        setError(data.detail || `提交被拒绝（${res.status}）`);
         return;
       }
+      // 仅当服务端真正落盘（201 + INSERT RETURNING）后才给成功条并拉取新行
       setMsg(data.message || "已提交");
       setSubmitForm({ probe_id: "", temp_c: "" });
       await loadReadings();
@@ -132,7 +133,7 @@ export function App() {
                 <input
                   value={loginForm.username}
                   onInput={(e) =>
-                    setLoginForm({ ...loginForm, username: e.target.value })
+                    setLoginForm((s) => ({ ...s, username: e.target.value }))
                   }
                 />
               </label>
@@ -142,7 +143,7 @@ export function App() {
                   type="password"
                   value={loginForm.password}
                   onInput={(e) =>
-                    setLoginForm({ ...loginForm, password: e.target.value })
+                    setLoginForm((s) => ({ ...s, password: e.target.value }))
                   }
                 />
               </label>
@@ -188,7 +189,7 @@ export function App() {
                   required
                   value={submitForm.probe_id}
                   onInput={(e) =>
-                    setSubmitForm({ ...submitForm, probe_id: e.target.value })
+                    setSubmitForm((s) => ({ ...s, probe_id: e.target.value }))
                   }
                   placeholder="例如 探头C03"
                 />
@@ -201,7 +202,7 @@ export function App() {
                   step="0.1"
                   value={submitForm.temp_c}
                   onInput={(e) =>
-                    setSubmitForm({ ...submitForm, temp_c: e.target.value })
+                    setSubmitForm((s) => ({ ...s, temp_c: e.target.value }))
                   }
                 />
               </label>
