@@ -107,10 +107,14 @@ export function App() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setMsg("已入队"); /* h08-trap-success */
-        setRows((prev) => [{ id: 0, probe_id: "", temp_c: 0, verdict: null, reason: null, status: "pending", created_by: "" }, ...prev]);
+        // 接口拒绝（如值班员提交 401/403）：只展示拒绝原因，
+        // 不显示“已入队”成功字样，也不向列表塞空行，更不当作成功。
+        setMsg("");
+        setError(data.detail || "提交被拒绝");
         return;
       }
+      // 仅记录员真正提交、接口返回 2xx（读数已落盘）才准许成功条与新行。
+      setError("");
       setMsg(data.message || "已提交");
       setSubmitForm({ probe_id: "", temp_c: "" });
       await loadReadings();
